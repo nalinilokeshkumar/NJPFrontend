@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Dashboard - Jaya Job Portal</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        #authorPopup {
+            position: fixed;
+            bottom: 70px;
+            right: 20px;
+            background: #212529;
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            display: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 999;
+            max-width: 250px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        #authorPopup button {
+            margin-top: 10px;
+            background: #0dcaf0;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #authorPopup button:hover {
+            background: #0bbcd6;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        body {
+            background: #f4f6f9;
+        }
+
+        .container {
+            margin-top: 20px;
+        }
+
+        .card {
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .card img {
+            height: 200px;
+            object-fit: cover;
+        }
+
+        footer {
+            background: #212529;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        #splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 9999;
+            padding: 20px;
+            flex-direction: column;
+        }
+
+        #timer {
+            font-size: 20px;
+            margin-top: 20px;
+            color: yellow;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Splash -->
+    <div id="splash" style="display:none;">
+        <div>
+            <h3>
+                தெய்வத்தான் ஆகா தெனினும் முயற்சிதன்<br>
+                மெய்வருத்தக் கூலி தரும்.
+            </h3>
+
+            <p class="mt-3">
+                Though fate-divine should make your labour vain;<br>
+                Effort its labour’s sure reward will gain.
+            </p>
+
+            <div id="timer"></div>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+
+            <span class="navbar-brand">Jaya Job Portal</span>
+
+            <!-- ✅ SEARCH BAR -->
+            <div class="d-flex">
+                <input type="text" id="searchInput" class="form-control me-2" placeholder="Search jobs...">
+                <button class="btn btn-warning" onclick="searchJobs()">Search</button>
+            </div>
+
+            <div class="d-flex align-items-center text-white ms-3">
+                <span id="username" class="me-3 fw-bold text-warning"></span>
+
+                <button class="btn btn-success me-2" onclick="goToAddJob()">Add Job</button>
+                <button class="btn btn-danger" onclick="logout()">Logout</button>
+            </div>
+
+        </div>
+    </nav>
+
+    <!-- Jobs -->
+    <div class="container">
+        <div class="row" id="jobList"></div>
+    </div>
+
+    <footer>
+        © Copyright by
+        <span>
+            JAYABALAJEE S K
+        </span>
+    </footer>
+    <div id="authorPopup">
+        <p>Hi you wanna know who is Jayabalajee S K ?</p>
+        <button onclick="openPortfolio()">Click Here</button>
+    </div>
+
+    <script>
+
+        const BASE_URL = "http://127.0.0.1:8000";
+
+        // ✅ Splash with countdown
+        function handleSplash() {
+            if (!localStorage.getItem("visitedDashboard")) {
+                let time = 10;
+                const splash = document.getElementById("splash");
+                const timer = document.getElementById("timer");
+
+                splash.style.display = "flex";
+
+                timer.innerText = "Jobs will be shown in " + time + " seconds";
+
+                const interval = setInterval(() => {
+                    time--;
+                    timer.innerText = "Jobs will be shown in " + time + " seconds";
+
+                    if (time === 0) {
+                        clearInterval(interval);
+                        splash.style.display = "none";
+                        localStorage.setItem("visitedDashboard", "true");
+                    }
+                }, 1000);
+            }
+        }
+
+        // ✅ Get logged user (UPDATED)
+        async function getUser() {
+            const res = await fetch(`${BASE_URL}/api/accounts/check-session/`, {
+                credentials: "include"
+            });
+
+            const data = await res.json();
+
+            if (!data.logged_in) {
+                window.location.href = "index.html";
+            } else {
+                document.getElementById("username").innerText = "Welcome " + data.username;
+            }
+        }
+
+        // ✅ Load jobs
+        async function loadJobs() {
+            const res = await fetch(`${BASE_URL}/api/jobs/all/`);
+            const jobs = await res.json();
+
+            const today = new Date();
+
+            // ✅ Sort jobs
+            jobs.sort((a, b) => {
+                const dateA = new Date(a.deadline);
+                const dateB = new Date(b.deadline);
+
+                const isAPast = dateA < today;
+                const isBPast = dateB < today;
+
+                // If one is past and other is not → push past to bottom
+                if (isAPast && !isBPast) return 1;
+                if (!isAPast && isBPast) return -1;
+
+                // If both are future OR both are past → sort by closest date
+                return dateA - dateB;
+            });
+
+            renderJobs(jobs);
+        }
+        function renderJobs(jobs) {
+            let html = "";
+
+            if (jobs.length === 0) {
+                html = `<h4 class="text-center text-danger">No jobs found</h4>`;
+            }
+
+            jobs.forEach(job => {
+                html += `
+            <div class="col-md-4 mb-4">
+                <div class="card shadow" onclick="viewJob(${job.id})">
+                    <img src="${job.photo ? BASE_URL + job.photo : 'https://via.placeholder.com/300'}">
+
+                    <div class="card-body">
+                        <h5>${job.title}</h5>
+                        <p>${job.desc.substring(0, 80)}...</p>
+
+                        <p><b>Deadline:</b> ${job.deadline}</p>
+                        <p><b>Posted By:</b> ${job.username}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+            });
+
+            document.getElementById("jobList").innerHTML = html;
+        }
+        // ✅ View job
+        function viewJob(id) {
+            window.location.href = `job-detail.html?id=${id}`;
+        }
+
+        // ✅ Logout
+        async function logout() {
+            await fetch(`${BASE_URL}/api/accounts/logout/`, {
+                method: "POST",
+                credentials: "include"
+            });
+
+            localStorage.removeItem("visitedDashboard");
+
+            alert("Logged out");
+            window.location.href = "index.html";
+        }
+
+        // ✅ Add Job
+        function goToAddJob() {
+            window.location.href = "add-job.html";
+        }
+
+        // INIT
+        handleSplash();
+        getUser();
+        loadJobs();
+
+
+
+        // ✅ Show after 5 seconds (every page load)
+        setTimeout(() => {
+            document.getElementById("authorPopup").style.display = "block";
+        }, 5000);
+
+        // ✅ Open portfolio
+        function openPortfolio() {
+            window.open("https://jayabalajeesk-portfolio-flax-xi.vercel.app/", "_blank");
+        }
+
+
+
+        async function searchJobs() {
+            const query = document.getElementById("searchInput").value;
+
+            if (!query) {
+                loadJobs(); // if empty → show all jobs
+                return;
+            }
+
+            const res = await fetch(`${BASE_URL}/api/jobs/search/?q=${query}`);
+            const jobs = await res.json();
+
+            renderJobs(jobs);
+        }
+
+    </script>
+
+</body>
+
+</html>

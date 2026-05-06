@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Register - Jaya Job Portal</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        #authorPopup {
+            position: fixed;
+            bottom: 70px;
+            right: 20px;
+            background: #212529;
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            display: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 999;
+            max-width: 250px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        #authorPopup button {
+            margin-top: 10px;
+            background: #0dcaf0;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #authorPopup button:hover {
+            background: #0bbcd6;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        body {
+            background: #f4f6f9;
+        }
+
+        .register-box {
+            width: 400px;
+            margin: 80px auto;
+        }
+
+        .card {
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .required::after {
+            content: " *";
+            color: red;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: #212529;
+            color: white;
+            text-align: center;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <span class="navbar-brand">Jaya Job Portal</span>
+        </div>
+    </nav>
+
+    <!-- Register Form -->
+    <div class="register-box">
+        <div class="card shadow">
+            <h4 class="text-center mb-3">Register</h4>
+
+            <div class="mb-3">
+                <label class="required">Username</label>
+                <input type="text" id="username" class="form-control" placeholder="Enter username">
+            </div>
+
+            <div class="mb-3">
+                <label class="required">Email</label>
+                <input type="email" id="email" class="form-control" placeholder="Enter email">
+            </div>
+
+            <div class="mb-3">
+                <label class="required">Password</label>
+                <input type="password" id="password" class="form-control" placeholder="Enter password">
+            </div>
+
+            <button class="btn btn-success w-100" onclick="register()">Register</button>
+
+            <p class="text-center mt-3">
+                Already have an account?
+                <a href="index.html">Login</a>
+            </p>
+
+            <p id="msg" class="text-danger text-center"></p>
+        </div>
+    </div>
+
+    <footer>
+        © Copyright by
+        <span>
+            JAYABALAJEE S K
+        </span>
+    </footer>
+    <div id="authorPopup">
+        <p>Hi you wanna know who is Jayabalajee S K ?</p>
+        <button onclick="openPortfolio()">Click Here</button>
+    </div>
+
+
+
+    <!-- JS -->
+    <script>
+        async function register() {
+            const username = document.getElementById("username").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
+
+            // Basic validation
+            if (!username || !email || !password) {
+                document.getElementById("msg").innerText = "All fields are required";
+                return;
+            }
+
+            const response = await fetch("http://127.0.0.1:8000/api/accounts/register/", {
+                method: "POST",
+                headers:
+                {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username,
+                    email,
+                    password
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert("Registration Successful");
+                window.location.href = "index.html"; // go to login
+            } else {
+                document.getElementById("msg").innerText = "Registration failed";
+            }
+        }
+
+
+        // ✅ Show after 5 seconds (every page load)
+        setTimeout(() => {
+            document.getElementById("authorPopup").style.display = "block";
+        }, 5000);
+
+        // ✅ Open portfolio
+        function openPortfolio() {
+            window.open("https://jayabalajeesk-portfolio-flax-xi.vercel.app/", "_blank");
+        }
+
+    </script>
+
+</body>
+
+</html>

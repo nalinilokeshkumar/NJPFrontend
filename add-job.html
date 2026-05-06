@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Add Job - Jaya Job Portal</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: #f4f6f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            margin-top: 30px;
+            margin-bottom: 80px;
+            /* space for footer */
+        }
+
+        .card {
+            border-radius: 10px;
+        }
+
+        footer {
+            background: #212529;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            margin-top: auto;
+            /* push footer down */
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand">Jaya Job Portal</span>
+
+            <div class="d-flex align-items-center text-white">
+                <span id="username" class="me-3 fw-bold text-warning"></span>
+
+                <button class="btn btn-secondary me-2" onclick="goBack()">Back</button>
+                <button class="btn btn-danger" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Form -->
+    <div class="container">
+        <div class="card p-4 shadow">
+            <h3 class="mb-3">Add Job</h3>
+
+            <form id="jobForm">
+
+                <!-- REQUIRED -->
+                <div class="mb-3">
+                    <label>Title *</label>
+                    <input type="text" name="title" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label>Description *</label>
+                    <textarea name="desc" class="form-control" rows="3" required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label>Deadline *</label>
+                    <input type="date" name="deadline" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label>Job Type *</label>
+                    <input type="text" name="job_type" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label>Experience *</label>
+                    <input type="number" step="0.1" name="experience" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label>Company Location *</label>
+                    <input type="text" name="company_location" class="form-control" required>
+                </div>
+
+                <!-- OPTIONAL -->
+                <div class="mb-3">
+                    <label>Salary</label>
+                    <input type="text" name="salary" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label>Vacancy</label>
+                    <input type="number" name="vacancy" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label>HR Name</label>
+                    <input type="text" name="hr_name" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label>HR Email</label>
+                    <input type="email" name="hr_email" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label>HR Mobile</label>
+                    <input type="text" name="hr_mobile" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label>Company Website</label>
+                    <input type="url" name="company_website" class="form-control">
+                </div>
+
+                <!-- ✅ FIXED IMAGE INPUT -->
+                <div class="mb-3">
+                    <label>Photo (JPG, JPEG, PNG only)</label>
+                    <input type="file" name="photo" class="form-control" accept=".jpg,.jpeg,.png,image/*">
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-3 w-100">Add Job</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        © Copyright by
+        <span id="authorLink" style="cursor:pointer;">
+            JAYABALAJEE S K
+        </span>
+    </footer>
+
+
+
+    <script>
+
+        const BASE_URL = "http://127.0.0.1:8000";
+
+        // ✅ Get user
+        async function getUser() {
+            const res = await fetch(`${BASE_URL}/api/accounts/check-session/`, {
+                credentials: "include"
+            });
+
+            const data = await res.json();
+
+            if (!data.logged_in) {
+                window.location.href = "index.html";
+            } else {
+                document.getElementById("username").innerText = "Hello " + data.username;
+            }
+        }
+
+        // ✅ Submit form
+        document.getElementById("jobForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const form = document.getElementById("jobForm");
+            const formData = new FormData(form);
+
+            try {
+                const res = await fetch(`${BASE_URL}/api/jobs/add/`, {
+                    method: "POST",
+                    credentials: "include",
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                console.log(data);
+
+                if (res.ok && data.msg === "Job Added") {
+                    alert("Job Added Successfully");
+
+
+                    setTimeout(() => {
+                        window.location.href = "dashboard.html";
+                    }, 5);
+
+                } else {
+                    alert("Error: " + JSON.stringify(data));
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert("Something went wrong");
+            }
+        });
+
+        // ✅ Logout
+        async function logout() {
+            await fetch(`${BASE_URL}/api/accounts/logout/`, {
+                method: "POST",
+                credentials: "include"
+            });
+
+            window.location.href = "index.html";
+        }
+
+        // ✅ Back
+        function goBack() {
+            window.location.href = "dashboard.html";
+        }
+
+        // INIT
+        getUser();
+
+
+
+
+
+
+    </script>
+
+</body>
+
+</html>

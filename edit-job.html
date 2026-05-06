@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Job - Jaya Job Portal</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body { 
+            background: #f4f6f9; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container { 
+            margin-top: 30px; 
+            margin-bottom: 80px;
+        }
+
+        .card {
+            border-radius: 10px;
+        }
+
+        footer {
+            background: #212529;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            margin-top: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+        <span class="navbar-brand">Jaya Job Portal</span>
+
+        <div class="d-flex align-items-center text-white">
+            <span id="username" class="me-3 fw-bold text-warning"></span>
+
+            <button class="btn btn-secondary me-2" onclick="goBack()">Back</button>
+            <button class="btn btn-danger" onclick="logout()">Logout</button>
+        </div>
+    </div>
+</nav>
+
+<!-- Form -->
+<div class="container">
+    <div class="card p-4 shadow">
+        <h3 class="mb-3">Edit Job</h3>
+
+        <form id="jobForm">
+
+            <!-- REQUIRED -->
+            <div class="mb-3">
+                <label>Title *</label>
+                <input type="text" name="title" id="title" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Description *</label>
+                <textarea name="desc" id="desc" class="form-control" required></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label>Deadline *</label>
+                <input type="date" name="deadline" id="deadline" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Job Type *</label>
+                <input type="text" name="job_type" id="job_type" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Experience *</label>
+                <input type="number" step="0.1" name="experience" id="experience" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Company Location *</label>
+                <input type="text" name="company_location" id="company_location" class="form-control" required>
+            </div>
+
+            <!-- OPTIONAL -->
+            <div class="mb-3">
+                <label>Salary</label>
+                <input type="text" name="salary" id="salary" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label>Vacancy</label>
+                <input type="number" name="vacancy" id="vacancy" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label>HR Name</label>
+                <input type="text" name="hr_name" id="hr_name" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label>HR Email</label>
+                <input type="email" name="hr_email" id="hr_email" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label>HR Mobile</label>
+                <input type="text" name="hr_mobile" id="hr_mobile" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label>Company Website</label>
+                <input type="url" name="company_website" id="company_website" class="form-control">
+            </div>
+
+            <!-- ACTIVE TOGGLE -->
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="isActive">
+                <label class="form-check-label">Active Job</label>
+            </div>
+
+            <!-- IMAGE -->
+            <div class="mb-3">
+                <label>Update Photo</label>
+                <input type="file" name="photo" id="photo" class="form-control" accept=".jpg,.jpeg,.png,image/*">
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Update Job</button>
+        </form>
+
+        <!-- DELETE BUTTON -->
+        <!-- <button class="btn btn-danger mt-3 w-100" onclick="deleteJob()">Delete Job</button> -->
+
+    </div>
+</div>
+
+<footer>
+    © Copyright by 
+    <span id="authorLink" style="cursor:pointer; text-decoration:underline;">
+        JAYABALAJEE S K
+    </span>
+</footer>
+
+
+<script>
+
+const BASE_URL = "http://127.0.0.1:8000";
+let jobId = null;
+let currentUserId = null;
+
+// ✅ Get ID
+function getJobId() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("id");
+}
+
+// ✅ Get user
+async function getUser() {
+    const res = await fetch(`${BASE_URL}/api/accounts/check-session/`, {
+        credentials: "include"
+    });
+
+    const data = await res.json();
+
+    if (!data.logged_in) {
+        window.location.href = "index.html";
+    } else {
+        document.getElementById("username").innerText = "Hello " + data.username;
+        currentUserId = data.user_id;
+    }
+}
+
+// ✅ Load job & fill form
+async function loadJob() {
+    jobId = getJobId();
+
+    const res = await fetch(`${BASE_URL}/api/jobs/${jobId}/`);
+    const job = await res.json();
+
+    // 🔥 OWNER CHECK
+    if (currentUserId != job.user) {
+        alert("Not Allowed");
+        window.location.href = "dashboard.html";
+        return;
+    }
+
+    // Fill form
+    document.getElementById("title").value = job.title;
+    document.getElementById("desc").value = job.desc;
+    document.getElementById("deadline").value = job.deadline;
+    document.getElementById("job_type").value = job.job_type;
+    document.getElementById("experience").value = job.experience;
+    document.getElementById("company_location").value = job.company_location;
+
+    document.getElementById("salary").value = job.salary || "";
+    document.getElementById("vacancy").value = job.vacancy || "";
+    document.getElementById("hr_name").value = job.hr_name || "";
+    document.getElementById("hr_email").value = job.hr_email || "";
+    document.getElementById("hr_mobile").value = job.hr_mobile || "";
+    document.getElementById("company_website").value = job.company_website || "";
+
+    document.getElementById("isActive").checked = job.isActive;
+}
+
+// ✅ Update job
+document.getElementById("jobForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const formData = new FormData();
+
+    formData.append("title", document.getElementById("title").value);
+    formData.append("desc", document.getElementById("desc").value);
+    formData.append("deadline", document.getElementById("deadline").value);
+    formData.append("job_type", document.getElementById("job_type").value);
+    formData.append("experience", document.getElementById("experience").value);
+    formData.append("company_location", document.getElementById("company_location").value);
+
+    formData.append("salary", document.getElementById("salary").value);
+    formData.append("vacancy", document.getElementById("vacancy").value);
+    formData.append("hr_name", document.getElementById("hr_name").value);
+    formData.append("hr_email", document.getElementById("hr_email").value);
+    formData.append("hr_mobile", document.getElementById("hr_mobile").value);
+    formData.append("company_website", document.getElementById("company_website").value);
+
+    formData.append("isActive", document.getElementById("isActive").checked);
+
+    const photo = document.getElementById("photo").files[0];
+    if (photo) formData.append("photo", photo);
+
+    const res = await fetch(`${BASE_URL}/api/jobs/update/${jobId}/`, {
+        method: "PUT",
+        credentials: "include",
+        body: formData
+    });
+
+    const data = await res.json();
+
+    if (data.msg === "Updated") {
+        alert("Updated Successfully");
+        window.location.href = "dashboard.html";
+    } else {
+        alert("Error updating");
+        console.log(data);
+    }
+});
+
+// ✅ Delete
+async function deleteJob() {
+    if (!confirm("Delete this job?")) return;
+
+    const res = await fetch(`${BASE_URL}/api/jobs/delete/${jobId}/`, {
+        method: "DELETE",
+        credentials: "include"
+    });
+
+    const data = await res.json();
+
+    if (data.msg === "Deleted") {
+        alert("Deleted");
+        window.location.href = "dashboard.html";
+    } else {
+        alert("Not Allowed");
+    }
+}
+
+// ✅ Logout
+async function logout() {
+    await fetch(`${BASE_URL}/api/accounts/logout/`, {
+        method: "POST",
+        credentials: "include"
+    });
+
+    window.location.href = "index.html";
+}
+
+// ✅ Back
+function goBack() {
+    window.location.href = "dashboard.html";
+}
+
+// INIT (IMPORTANT ORDER)
+(async () => {
+    await getUser();
+    await loadJob();
+})();
+
+
+
+
+</script>
+
+</body>
+</html>
