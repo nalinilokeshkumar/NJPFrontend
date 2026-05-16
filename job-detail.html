@@ -121,7 +121,7 @@
 
     <script>
 
-        const BASE_URL = "http://127.0.0.1:8000";
+        const BASE_URL = "https://njpbackend.onrender.com";
         let currentUserId = null;
 
         function getJobId() {
@@ -137,7 +137,7 @@
             const data = await res.json();
 
             if (!data.logged_in) {
-                window.location.href = "index.html";
+                window.location.href = "https://njp-nalinijobportal.vercel.app/index.html";
             } else {
                 document.getElementById("username").innerText = "Hello " + data.username;
 
@@ -239,30 +239,24 @@
             window.location.href = `edit-job.html?id=${id}`;
         }
 
-        // ✅ Delete //jwt
-        async function deleteJob(id) {
-            if (!confirm("Are you sure to delete?")) return;
+// ✅ Delete
+async function deleteJob(id) {
+    if (!confirm("Are you sure to delete?")) return;
 
-            const token = localStorage.getItem("access_token"); // 👈 store after login
+    const res = await fetch(`${BASE_URL}/api/jobs/delete/${id}/`, {
+        method: "DELETE",
+        credentials: "include"
+    });
 
-            const res = await fetch(`${BASE_URL}/api/jobs/delete/${id}/`, {
-                method: "DELETE",
-                credentials: "include",
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                } //header added
+    const data = await res.json();
 
-            });
-
-            const data = await res.json();
-
-            if (data.msg === "Deleted") {
-                alert("Job Deleted");
-                window.location.href = "dashboard.html";
-            } else {
-                alert("Not Allowed");
-            }
-        }
+    if (data.msg === "Deleted") {
+        alert("Job Deleted");
+        window.location.href = "dashboard.html";
+    } else {
+        alert(data.msg || "Not Allowed");
+    }
+}
 
         // ✅ Logout
         async function logout() {

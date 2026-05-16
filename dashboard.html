@@ -109,7 +109,7 @@
 
 <body>
 
-    <!-- Splash -->
+    <!-- Splash
     <div id="splash" style="display:none;">
         <div>
             <h3>
@@ -124,7 +124,7 @@
 
             <div id="timer"></div>
         </div>
-    </div>
+    </div> -->
 
     <!-- Navbar -->
     <nav class="navbar navbar-dark bg-dark">
@@ -166,31 +166,31 @@
 
     <script>
 
-        const BASE_URL = "http://127.0.0.1:8000";
+        const BASE_URL = "https://njpbackend.onrender.com";
 
         // ✅ Splash with countdown
-        function handleSplash() {
-            if (!localStorage.getItem("visitedDashboard")) {
-                let time = 10;
-                const splash = document.getElementById("splash");
-                const timer = document.getElementById("timer");
+      //  function handleSplash() {
+        //    if (!localStorage.getItem("visitedDashboard")) {
+          //      let time = 10;
+            //    const splash = document.getElementById("splash");
+              //  const timer = document.getElementById("timer");
 
-                splash.style.display = "flex";
+                //splash.style.display = "flex";
 
-                timer.innerText = "Jobs will be shown in " + time + " seconds";
+//                timer.innerText = "Jobs will be shown in " + time + " seconds";
 
-                const interval = setInterval(() => {
-                    time--;
-                    timer.innerText = "Jobs will be shown in " + time + " seconds";
+  //              const interval = setInterval(() => {
+    //                time--;
+      //              timer.innerText = "Jobs will be shown in " + time + " seconds";
 
-                    if (time === 0) {
-                        clearInterval(interval);
-                        splash.style.display = "none";
-                        localStorage.setItem("visitedDashboard", "true");
-                    }
-                }, 1000);
-            }
-        }
+        //            if (time === 0) {
+          //              clearInterval(interval);
+            //            splash.style.display = "none";
+              //          localStorage.setItem("visitedDashboard", "true");
+                //    }
+               // }, 1000);
+           // }
+        //}
 
         // ✅ Get logged user (UPDATED)
         async function getUser() {
@@ -201,7 +201,7 @@
             const data = await res.json();
 
             if (!data.logged_in) {
-                window.location.href = "index.html";
+                window.location.href = "https://njp-nalinijobportal.vercel.app/index.html";
             } else {
                 document.getElementById("username").innerText = "Welcome " + data.username;
             }
@@ -261,7 +261,7 @@
         }
         // ✅ View job
         function viewJob(id) {
-            window.location.href = `job-detail.html?id=${id}`;
+            window.location.href = `https://njp-nalinijobportal.vercel.app/job-detail.html?id=${id}`;
         }
 
         // ✅ Logout
@@ -274,16 +274,16 @@
             localStorage.removeItem("visitedDashboard");
 
             alert("Logged out");
-            window.location.href = "index.html";
+            window.location.href = "https://njp-nalinijobportal.vercel.app/index.html";
         }
 
         // ✅ Add Job
         function goToAddJob() {
-            window.location.href = "add-job.html";
+            window.location.href = "https://njp-nalinijobportal.vercel.app/add-job.html";
         }
 
         // INIT
-        handleSplash();
+       // handleSplash();
         getUser();
         loadJobs();
 

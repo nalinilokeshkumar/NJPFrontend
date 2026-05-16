@@ -133,7 +133,7 @@
         </form>
 
         <!-- DELETE BUTTON -->
-        <!-- <button class="btn btn-danger mt-3 w-100" onclick="deleteJob()">Delete Job</button> -->
+        <button class="btn btn-danger mt-3 w-100" onclick="deleteJob()">Delete Job</button>
 
     </div>
 </div>
@@ -148,7 +148,7 @@
 
 <script>
 
-const BASE_URL = "http://127.0.0.1:8000";
+const BASE_URL = "https://njpbackend.onrender.com";
 let jobId = null;
 let currentUserId = null;
 
@@ -167,7 +167,7 @@ async function getUser() {
     const data = await res.json();
 
     if (!data.logged_in) {
-        window.location.href = "index.html";
+        window.location.href = "https://njp-nalinijobportal.vercel.app/index.html";
     } else {
         document.getElementById("username").innerText = "Hello " + data.username;
         currentUserId = data.user_id;
@@ -178,13 +178,15 @@ async function getUser() {
 async function loadJob() {
     jobId = getJobId();
 
-    const res = await fetch(`${BASE_URL}/api/jobs/${jobId}/`);
+    const res = await fetch(`${BASE_URL}/api/jobs/${jobId}/`, {
+    credentials: "include"
+});
     const job = await res.json();
 
     // 🔥 OWNER CHECK
     if (currentUserId != job.user) {
         alert("Not Allowed");
-        window.location.href = "dashboard.html";
+        window.location.href = "https://njp-nalinijobportal.vercel.app/dashboard.html";
         return;
     }
 
@@ -241,7 +243,7 @@ document.getElementById("jobForm").addEventListener("submit", async function(e) 
 
     if (data.msg === "Updated") {
         alert("Updated Successfully");
-        window.location.href = "dashboard.html";
+        window.location.href = "https://njp-nalinijobportal.vercel.app/dashboard.html";
     } else {
         alert("Error updating");
         console.log(data);
@@ -249,10 +251,11 @@ document.getElementById("jobForm").addEventListener("submit", async function(e) 
 });
 
 // ✅ Delete
-async function deleteJob() {
-    if (!confirm("Delete this job?")) return;
+// ✅ Delete
+async function deleteJob(id) {
+    if (!confirm("Are you sure to delete?")) return;
 
-    const res = await fetch(`${BASE_URL}/api/jobs/delete/${jobId}/`, {
+    const res = await fetch(`${BASE_URL}/api/jobs/delete/${id}/`, {
         method: "DELETE",
         credentials: "include"
     });
@@ -260,10 +263,10 @@ async function deleteJob() {
     const data = await res.json();
 
     if (data.msg === "Deleted") {
-        alert("Deleted");
+        alert("Job Deleted");
         window.location.href = "dashboard.html";
     } else {
-        alert("Not Allowed");
+        alert(data.msg || "Not Allowed");
     }
 }
 
@@ -274,12 +277,12 @@ async function logout() {
         credentials: "include"
     });
 
-    window.location.href = "index.html";
+    window.location.href = "https://njp-nalinijobportal.vercel.app/index.html";
 }
 
 // ✅ Back
 function goBack() {
-    window.location.href = "dashboard.html";
+    window.location.href = "https://njp-nalinijobportal.vercel.app/dashboard.html";
 }
 
 // INIT (IMPORTANT ORDER)
